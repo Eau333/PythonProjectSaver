@@ -1,4 +1,4 @@
 import uno
 
-testdeck = uno.deck()
-print(testdeck)
+testgame = uno.game(4)
+print(testgame)
