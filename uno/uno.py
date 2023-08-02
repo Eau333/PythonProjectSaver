@@ -56,4 +56,20 @@ class game():
             self.players.append(player())
         self.currentTurn = 0
         self.order = 1
-        self.activeCard = None
+        self.activeCard = []
+        self.deal()
+
+    def moveCard(self,fromDeck,toDeck,topCard):
+        toDeck.append(fromDeck[topCard])
+        del fromDeck[topCard]
+
+    def deal(self):
+        for currentPlayer in range(0,self.playerCount):
+            for j in range(0,7):
+                self.moveCard(self.deck.DrawPile,self.players[currentPlayer].hand,0)
+        self.makeActive(self.deck.DrawPile,0)
+
+    def makeActive(self,fromDeck,cardIndex):
+        if len(self.activeCard) >= 1:
+            self.moveCard(self.activeCard,self.discardPile,0)
+        self.moveCard(fromDeck,self.activeCard,cardIndex)

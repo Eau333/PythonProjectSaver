@@ -1,4 +1,4 @@
 import uno
 
-testgame = uno.game(4)
+testgame = uno.game(playerCount=4)
 print(testgame)
