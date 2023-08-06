@@ -1,4 +1,4 @@
 import uno
 
-testgame = uno.game(playerCount=4)
+testgame = uno.game(playerCount=int(input("Choose cpu quantity:"))+1)
 print(testgame)

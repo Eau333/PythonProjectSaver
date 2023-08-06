@@ -23,6 +23,12 @@ class cards():
         self.number = number
         self.points = points
 
+    def cardInfo(self):
+        if self.action == action.Number:
+            return str(self.colour.name)+" "+str(self.number)
+        else:
+            return str(self.colour.name)+" "+str(self.action.name)
+
 class deck():
     def __init__(self):
         self.DrawPile = []
@@ -58,6 +64,8 @@ class game():
         self.order = 1
         self.activeCard = []
         self.deal()
+        self.roundover = False
+        self.gameStart()
 
     def moveCard(self,fromDeck,toDeck,topCard):
         toDeck.append(fromDeck[topCard])
@@ -73,3 +81,18 @@ class game():
         if len(self.activeCard) >= 1:
             self.moveCard(self.activeCard,self.discardPile,0)
         self.moveCard(fromDeck,self.activeCard,cardIndex)
+
+    def gameStart(self):
+        print("Welcome to PyUno!")
+        print("You are playing against "+str(self.playerCount-1)+" CPUs.")
+        while not self.roundover:
+            if self.currentTurn == 0:
+                self.playerTurn()
+            else:
+                self.cpuTurn()
+
+    def playerTurn(self):
+        print("It is your turn.")
+        print("Your hand:")
+        for i in range(0, len(self.players[self.currentTurn].hand)):
+            print(self.players[self.currentTurn].hand[i].cardInfo())
