@@ -67,9 +67,9 @@ class game():
         self.roundover = False
         self.gameStart()
 
-    def moveCard(self,fromDeck,toDeck,topCard):
-        toDeck.append(fromDeck[topCard])
-        del fromDeck[topCard]
+    def moveCard(self,fromDeck,toDeck,cardIndex):
+        toDeck.append(fromDeck[cardIndex])
+        del fromDeck[cardIndex]
 
     def deal(self):
         for currentPlayer in range(0,self.playerCount):
@@ -86,6 +86,7 @@ class game():
         print("Welcome to PyUno!")
         print("You are playing against "+str(self.playerCount-1)+" CPUs.")
         while not self.roundover:
+            print("The active card is: "+self.activeCard[0].cardInfo())
             if self.currentTurn == 0:
                 self.playerTurn()
             else:
@@ -96,3 +97,33 @@ class game():
         print("Your hand:")
         for i in range(0, len(self.players[self.currentTurn].hand)):
             print(self.players[self.currentTurn].hand[i].cardInfo())
+        if not self.checkPlayable(self.players[self.currentTurn].hand):
+            print("You do not have any legal cards. You drew: "+self.drawCard(self.players[self.currentTurn].hand))
+
+    def checkLegal(self,checkCard):
+        activeCard = self.activeCard[0]
+        if checkCard.colour == activeCard.colour:
+            return True
+        elif checkCard.number == activeCard.number and not activeCard.number == -1:
+            return True
+        elif checkCard.action == activeCard.action and not activeCard.action == action.Number:
+            return True
+        elif checkCard.colour == colour.wild:
+            return True
+        else:
+            return False
+
+    def checkPlayable(self,hand):
+        for card in hand:
+            if self.checkLegal(card):
+                return True
+        return False
+
+    def drawCard(self,drawHand):
+        if len(self.deck.DrawPile) < 1:
+            self.deck.DrawPile = self.discardPile
+            self.discardPile = []
+            self.deck.shuffle()
+        self.moveCard(self.deck.DrawPile,drawHand,0)
+        return drawHand[-1].cardInfo()
+
