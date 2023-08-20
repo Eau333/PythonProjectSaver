@@ -1,5 +1,6 @@
 import enum
 import random
+import uno_gfx_api
 
 class colour(enum.Enum):
     blue = 1
@@ -53,8 +54,11 @@ class player():
         self.points = 0
 
 class game():
-    def __init__(self,playerCount):
-        self.playerCount = playerCount
+    def __init__(self):
+        self.graphics = uno_gfx_api.unoGfx()
+        self.graphics.set_welcome_message(welcome_message='Welcome to PyUno!')
+        self.graphics.choose_num_players()
+        self.playerCount = self.graphics.get_num_cpu()+1
         self.deck = deck()
         self.discardPile = []
         self.players = []
