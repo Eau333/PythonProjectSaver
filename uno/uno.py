@@ -58,16 +58,21 @@ class game():
         self.graphics = uno_gfx_api.unoGfx()
         self.graphics.set_welcome_message(welcome_message='Welcome to PyUno!')
         self.graphics.choose_num_players()
+        self.gfx_updater = graphicsUpdater(unogame= self)
         self.playerCount = self.graphics.get_num_cpu()+1
         self.deck = deck()
         self.discardPile = []
         self.players = []
-        for i in range(0, playerCount):
+        for i in range(0, self.playerCount):
             self.players.append(player())
         self.currentTurn = 0
         self.order = 1
         self.activeCard = []
+        self.graphics.set_card_counts(total_cards=len(self.deck.DrawPile), cards_per_player=7)
+        self.graphics.main_setup()
         self.deal()
+        self.gfx_updater.updateActiveCard()
+        self.graphics.update_window()
         self.roundover = False
         self.gameStart()
 
@@ -131,3 +136,12 @@ class game():
         self.moveCard(self.deck.DrawPile,drawHand,0)
         return drawHand[-1].cardInfo()
 
+class graphicsUpdater():
+    def __init__(self, unogame: game):
+        self.unogame = unogame
+
+    def updateActiveCard(self):
+        colour = self.unogame.activeCard[0].colour
+        action = self.unogame.activeCard[0].action
+        number = self.unogame.activeCard[0].number
+        self.unogame.graphics.set_active_card(colour.name,action.name,number)
