@@ -58,7 +58,7 @@ class game():
         self.graphics = uno_gfx_api.unoGfx()
         self.graphics.set_welcome_message(welcome_message='Welcome to PyUno!')
         self.graphics.choose_num_players()
-        self.gfx_updater = graphicsUpdater(unogame= self)
+        self.gfx_updater = graphicsUpdater(unogame=self)
         self.playerCount = self.graphics.get_num_cpu()+1
         self.deck = deck()
         self.discardPile = []
@@ -72,7 +72,7 @@ class game():
         self.graphics.main_setup()
         self.deal()
         self.gfx_updater.updateActiveCard()
-        self.graphics.update_window()
+        self.gfx_updater.showPlayerHand()
         self.roundover = False
         self.gameStart()
 
@@ -92,22 +92,31 @@ class game():
         self.moveCard(fromDeck,self.activeCard,cardIndex)
 
     def gameStart(self):
-        print("Welcome to PyUno!")
-        print("You are playing against "+str(self.playerCount-1)+" CPUs.")
         while not self.roundover:
-            print("The active card is: "+self.activeCard[0].cardInfo())
             if self.currentTurn == 0:
                 self.playerTurn()
             else:
                 self.cpuTurn()
 
     def playerTurn(self):
-        print("It is your turn.")
-        print("Your hand:")
-        for i in range(0, len(self.players[self.currentTurn].hand)):
-            print(self.players[self.currentTurn].hand[i].cardInfo())
+        self.graphics.player_hand.toggle_highlight()
+        self.graphics.set_message("It is your turn.")
+        self.graphics.update_window()
         if not self.checkPlayable(self.players[self.currentTurn].hand):
-            print("You do not have any legal cards. You drew: "+self.drawCard(self.players[self.currentTurn].hand))
+            self.graphics.set_message("You do not have any legal cards. You drew: "+self.drawCard(self.players[self.currentTurn].hand))
+        else:
+            legal_card = False
+            while not legal_card:
+                selected_card = self.graphics.read_player_move()
+                if self.checkLegal(self.players[0].hand[selected_card]):
+                    legal_card = True
+                    self.makeActive(self.players[0].hand,selected_card)
+                    self.gfx_updater.updateActiveCard()
+                    self.graphics.player_hand.remove_card_index(selected_card)
+                else:
+                    self.graphics.set_message("Card played is not legal. Please choose a legal card.")
+                self.graphics.update_window()
+
 
     def checkLegal(self,checkCard):
         activeCard = self.activeCard[0]
@@ -145,3 +154,8 @@ class graphicsUpdater():
         action = self.unogame.activeCard[0].action
         number = self.unogame.activeCard[0].number
         self.unogame.graphics.set_active_card(colour.name,action.name,number)
+        self.unogame.graphics.active_pile.discard_pile_size = len(self.unogame.discardPile)
+
+    def showPlayerHand(self):
+        for card in self.unogame.players[0].hand:
+            self.unogame.graphics.player_hand.add_player_card(card.colour.name,card.action.name,card.number)
