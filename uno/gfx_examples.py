@@ -1,8 +1,17 @@
 import uno_gfx_api
 import time
+import tkinter
+from tkinter import simpledialog
 
 def run_examples():
     print('Running test examples.')
+
+    root = tkinter.Tk()
+    root.eval(f'tk::PlaceWindow {root._w} center')
+    root.withdraw()
+    selected_colour = simpledialog.askstring(title="You played a wild card.",
+                                             prompt="Enter a colour:",
+                                             parent=root)
 
     # checks that the Uno Graphics library can be reached
     uno_gfx_api.dependency_test()
