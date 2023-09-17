@@ -1,6 +1,8 @@
 import enum
 import random
 import uno_gfx_api
+import tkinter
+from tkinter import simpledialog
 
 class colour(enum.Enum):
     blue = 1
@@ -55,6 +57,9 @@ class player():
 
 class game():
     def __init__(self):
+        self.root = tkinter.Tk()
+        self.root.eval(f'tk::PlaceWindow {self.root._w} center')
+        self.root.withdraw()
         self.graphics = uno_gfx_api.unoGfx()
         self.graphics.set_welcome_message(welcome_message='Welcome to PyUno!')
         self.graphics.choose_num_players()
@@ -68,6 +73,7 @@ class game():
         self.currentTurn = 0
         self.order = 1
         self.activeCard = []
+        self.active_colour = colour.wild
         self.graphics.set_card_counts(total_cards=len(self.deck.DrawPile), cards_per_player=7)
         self.graphics.main_setup()
         self.deal()
@@ -110,6 +116,8 @@ class game():
                 selected_card = self.graphics.read_player_move()
                 if self.checkLegal(self.players[0].hand[selected_card]):
                     legal_card = True
+                    if self.players[0].hand[selected_card].colour == colour.wild:
+                        self.active_colour = self.inputColour()
                     self.makeActive(self.players[0].hand,selected_card)
                     self.gfx_updater.updateActiveCard()
                     self.graphics.player_hand.remove_card_index(selected_card)
@@ -121,6 +129,8 @@ class game():
     def checkLegal(self,checkCard):
         activeCard = self.activeCard[0]
         if checkCard.colour == activeCard.colour:
+            return True
+        elif activeCard.colour == colour.wild and checkCard.colour == self.active_colour:
             return True
         elif checkCard.number == activeCard.number and not activeCard.number == -1:
             return True
@@ -144,6 +154,22 @@ class game():
             self.deck.shuffle()
         self.moveCard(self.deck.DrawPile,drawHand,0)
         return drawHand[-1].cardInfo()
+
+    def inputColour(self):
+        prompt = "Enter a colour:"
+        while True:
+            selected_colour = simpledialog.askstring(title="You played a wild card.",
+                                                     prompt=prompt,
+                                                     parent=self.root)
+            if selected_colour == "blue":
+                return colour.blue
+            elif selected_colour == "green":
+                return colour.green
+            elif selected_colour == "red":
+                return colour.red
+            elif selected_colour == "yellow":
+                return colour.yellow
+            prompt = "Invalid colour. Please pick blue, green, red, or yellow."
 
 class graphicsUpdater():
     def __init__(self, unogame: game):
