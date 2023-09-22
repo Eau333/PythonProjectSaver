@@ -108,9 +108,14 @@ class game():
         self.graphics.player_hand.toggle_highlight()
         self.graphics.set_message("It is your turn.")
         self.graphics.update_window()
+
         if not self.checkPlayable(self.players[self.currentTurn].hand):
             self.graphics.set_message("You do not have any legal cards. You drew: "+self.drawCard(self.players[self.currentTurn].hand))
-        else:
+            drawn_card = self.players[self.currentTurn].hand[-1]
+            self.graphics.player_hand.add_player_card(drawn_card.colour.name, drawn_card.action.name, drawn_card.number)
+            self.graphics.update_window()
+
+        if self.checkPlayable(self.players[self.currentTurn].hand):
             legal_card = False
             while not legal_card:
                 selected_card = self.graphics.read_player_move()
@@ -125,6 +130,7 @@ class game():
                     self.graphics.set_message("Card played is not legal. Please choose a legal card.")
                 self.graphics.update_window()
 
+        self.graphics.player_hand.toggle_highlight()
 
     def checkLegal(self,checkCard):
         activeCard = self.activeCard[0]
@@ -152,7 +158,10 @@ class game():
             self.deck.DrawPile = self.discardPile
             self.discardPile = []
             self.deck.shuffle()
+            self.graphics.active_pile.discard_pile_size = 0
         self.moveCard(self.deck.DrawPile,drawHand,0)
+        self.graphics.set_draw_pile_size(len(self.deck.DrawPile))
+        self.graphics.update_window()
         return drawHand[-1].cardInfo()
 
     def inputColour(self):
