@@ -1,8 +1,10 @@
 import enum
 import random
-import uno_gfx_api
+import time
 import tkinter
 from tkinter import simpledialog
+import uno_gfx_api
+
 
 class colour(enum.Enum):
     blue = 1
@@ -103,6 +105,7 @@ class game():
                 self.playerTurn()
             else:
                 self.cpuTurn()
+            self.changeTurn()
 
     def playerTurn(self):
         self.graphics.player_hand.toggle_highlight()
@@ -131,6 +134,14 @@ class game():
                 self.graphics.update_window()
 
         self.graphics.player_hand.toggle_highlight()
+
+    def cpuTurn(self):
+        self.graphics.cpu_list[self.currentTurn-1].toggle_highlight()
+        self.graphics.set_message("It\'s CPU "+str(self.currentTurn)+"\'s turn.")
+        self.graphics.update_window()
+        time.sleep(2)
+        self.graphics.cpu_list[self.currentTurn-1].toggle_highlight()
+        self.graphics.update_window()
 
     def checkLegal(self,checkCard):
         activeCard = self.activeCard[0]
@@ -179,6 +190,13 @@ class game():
             elif selected_colour == "yellow":
                 return colour.yellow
             prompt = "Invalid colour. Please pick blue, green, red, or yellow."
+
+    def changeTurn(self):
+        self.currentTurn += self.order
+        if self.currentTurn == -1:
+            self.currentTurn = self.playerCount-1
+        if self.currentTurn > self.playerCount-1:
+            self.currentTurn = 0
 
 class graphicsUpdater():
     def __init__(self, unogame: game):
