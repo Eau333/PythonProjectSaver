@@ -117,6 +117,7 @@ class game():
             drawn_card = self.players[self.currentTurn].hand[-1]
             self.graphics.player_hand.add_player_card(drawn_card.colour.name, drawn_card.action.name, drawn_card.number)
             self.graphics.update_window()
+            time.sleep(2)
 
         if self.checkPlayable(self.players[self.currentTurn].hand):
             legal_card = False
@@ -140,6 +141,15 @@ class game():
         self.graphics.set_message("It\'s CPU "+str(self.currentTurn)+"\'s turn.")
         self.graphics.update_window()
         time.sleep(2)
+        if not self.checkPlayable(self.players[self.currentTurn].hand):
+            self.graphics.set_message(
+                "CPU does not have any legal cards. CPU drew 1 card. ")
+            self.drawCard(self.players[self.currentTurn].hand)
+            self.graphics.cpu_list[self.currentTurn - 1].card_count += 1
+            self.graphics.update_window()
+            time.sleep(2)
+        if self.checkPlayable(self.players[self.currentTurn].hand):
+            self.cpuPlayCard()
         self.graphics.cpu_list[self.currentTurn-1].toggle_highlight()
         self.graphics.update_window()
 
@@ -197,6 +207,21 @@ class game():
             self.currentTurn = self.playerCount-1
         if self.currentTurn > self.playerCount-1:
             self.currentTurn = 0
+
+    def cpuPlayCard(self):
+        for cardIndex, card in enumerate(self.players[self.currentTurn].hand):
+            if self.checkLegal(card):
+                if card.colour == colour.wild:
+                    random_colour = random.choice([colour.blue, colour.green, colour.red, colour.yellow])
+                    self.active_colour = random_colour
+                self.makeActive(self.players[self.currentTurn].hand, cardIndex)
+                self.gfx_updater.updateActiveCard()
+                self.graphics.cpu_list[self.currentTurn - 1].card_count -= 1
+                self.graphics.set_message("CPU played: "+card.cardInfo())
+                # to do: include wild colour inside message
+                self.graphics.update_window()
+                time.sleep(2)
+                return
 
 class graphicsUpdater():
     def __init__(self, unogame: game):
