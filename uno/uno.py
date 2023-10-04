@@ -82,6 +82,7 @@ class game():
         self.gfx_updater.updateActiveCard()
         self.gfx_updater.showPlayerHand()
         self.roundover = False
+        self.card_played_question_mark = False
         self.gameStart()
 
     def moveCard(self,fromDeck,toDeck,cardIndex):
@@ -101,10 +102,13 @@ class game():
 
     def gameStart(self):
         while not self.roundover:
+            self.card_played_question_mark = False
             if self.currentTurn == 0:
                 self.playerTurn()
             else:
                 self.cpuTurn()
+            if self.card_played_question_mark:
+                self.checkActionCard()
             self.changeTurn()
 
     def playerTurn(self):
@@ -125,6 +129,7 @@ class game():
                 selected_card = self.graphics.read_player_move()
                 if self.checkLegal(self.players[0].hand[selected_card]):
                     legal_card = True
+                    self.card_played_question_mark = True
                     if self.players[0].hand[selected_card].colour == colour.wild:
                         self.active_colour = self.inputColour()
                     self.makeActive(self.players[0].hand,selected_card)
@@ -211,17 +216,29 @@ class game():
     def cpuPlayCard(self):
         for cardIndex, card in enumerate(self.players[self.currentTurn].hand):
             if self.checkLegal(card):
+                wild_message = ""
                 if card.colour == colour.wild:
                     random_colour = random.choice([colour.blue, colour.green, colour.red, colour.yellow])
                     self.active_colour = random_colour
+                    wild_message = ". Wild colour is "+random_colour.name
                 self.makeActive(self.players[self.currentTurn].hand, cardIndex)
+                self.card_played_question_mark = True
                 self.gfx_updater.updateActiveCard()
                 self.graphics.cpu_list[self.currentTurn - 1].card_count -= 1
-                self.graphics.set_message("CPU played: "+card.cardInfo())
-                # to do: include wild colour inside message
+                self.graphics.set_message("CPU played: "+card.cardInfo()+wild_message)
                 self.graphics.update_window()
                 time.sleep(2)
                 return
+
+    def checkActionCard(self):
+        if self.activeCard[0].action == action.Skip:
+            self.changeTurn()
+        elif self.activeCard[0].action == action.Reverse:
+            if self.playerCount == 2:
+                self.changeTurn()
+            else:
+                self.order *= -1
+        #to do: write code for draw 2 and 4 cards
 
 class graphicsUpdater():
     def __init__(self, unogame: game):
