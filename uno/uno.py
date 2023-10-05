@@ -83,6 +83,7 @@ class game():
         self.gfx_updater.showPlayerHand()
         self.roundover = False
         self.card_played_question_mark = False
+        self.extra_draw_count = 0
         self.gameStart()
 
     def moveCard(self,fromDeck,toDeck,cardIndex):
@@ -110,6 +111,7 @@ class game():
             if self.card_played_question_mark:
                 self.checkActionCard()
             self.changeTurn()
+            self.drawExtraCards()
 
     def playerTurn(self):
         self.graphics.player_hand.toggle_highlight()
@@ -231,6 +233,7 @@ class game():
                 return
 
     def checkActionCard(self):
+        self.extra_draw_count = 0
         if self.activeCard[0].action == action.Skip:
             self.changeTurn()
         elif self.activeCard[0].action == action.Reverse:
@@ -238,7 +241,29 @@ class game():
                 self.changeTurn()
             else:
                 self.order *= -1
-        #to do: write code for draw 2 and 4 cards
+        elif self.activeCard[0].action == action.Draw2:
+            self.extra_draw_count = 2
+        elif self.activeCard[0].action == action.Draw4:
+            self.extra_draw_count = 4
+
+    def drawExtraCards(self):
+        if self.extra_draw_count > 0:
+            for i in range(0, self.extra_draw_count):
+                self.drawCard(self.players[self.currentTurn].hand)
+                if self.currentTurn == 0:
+                    drawn_card = self.players[0].hand[-1]
+                    self.graphics.player_hand.add_player_card(drawn_card.colour.name, drawn_card.action.name,
+                                                              drawn_card.number)
+            if self.currentTurn == 0:
+                self.graphics.set_message("You drew "+str(self.extra_draw_count)+" cards because a draw card was played.")
+            else:
+                self.graphics.set_message("CPU drew "+str(self.extra_draw_count)+" cards because a draw card was played.")
+                self.graphics.cpu_list[self.currentTurn - 1].card_count += self.extra_draw_count
+            self.graphics.update_window()
+            time.sleep(2)
+            self.changeTurn()
+        self.extra_draw_count = 0
+
 
 class graphicsUpdater():
     def __init__(self, unogame: game):
