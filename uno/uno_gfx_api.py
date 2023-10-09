@@ -266,6 +266,8 @@ class unoGfx():
         self.set_draw_pile_size(self.total_cards-(self.num_cpu+1)*self.cards_per_player)
 
         y_spacing = 0.23
+        self.cpu_list = []
+        self.player_hand.cards = []
         for i in range(0, self.num_cpu):
             base_x = 25
             cpu_index = 0

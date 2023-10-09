@@ -65,6 +65,7 @@ class game():
         self.graphics = uno_gfx_api.unoGfx()
         self.graphics.set_welcome_message(welcome_message='Welcome to PyUno!')
         self.graphics.choose_num_players()
+        self.timer_delay = 0
         self.gfx_updater = graphicsUpdater(unogame=self)
         self.playerCount = self.graphics.get_num_cpu()+1
         self.deck = deck()
@@ -81,7 +82,24 @@ class game():
         self.deal()
         self.gfx_updater.updateActiveCard()
         self.gfx_updater.showPlayerHand()
-        self.roundover = False
+        self.card_played_question_mark = False
+        self.extra_draw_count = 0
+        self.gameStart()
+        self.newRound()
+
+    def newRound(self):
+        self.deck = deck()
+        self.discardPile = []
+        for player in self.players:
+            player.hand = []
+        self.currentTurn = 0
+        self.order = 1
+        self.activeCard = []
+        self.graphics.set_card_counts(total_cards=len(self.deck.DrawPile), cards_per_player=7)
+        self.graphics.main_setup()
+        self.deal()
+        self.gfx_updater.updateActiveCard()
+        self.gfx_updater.showPlayerHand()
         self.card_played_question_mark = False
         self.extra_draw_count = 0
         self.gameStart()
@@ -102,12 +120,15 @@ class game():
         self.moveCard(fromDeck,self.activeCard,cardIndex)
 
     def gameStart(self):
-        while not self.roundover:
+        while True:
             self.card_played_question_mark = False
             if self.currentTurn == 0:
                 self.playerTurn()
             else:
                 self.cpuTurn()
+            if len(self.players[self.currentTurn].hand) == 0:
+                self.gainPoints()
+                return
             if self.card_played_question_mark:
                 self.checkActionCard()
             self.changeTurn()
@@ -123,7 +144,7 @@ class game():
             drawn_card = self.players[self.currentTurn].hand[-1]
             self.graphics.player_hand.add_player_card(drawn_card.colour.name, drawn_card.action.name, drawn_card.number)
             self.graphics.update_window()
-            time.sleep(2)
+            time.sleep(self.timer_delay)
 
         if self.checkPlayable(self.players[self.currentTurn].hand):
             legal_card = False
@@ -147,14 +168,14 @@ class game():
         self.graphics.cpu_list[self.currentTurn-1].toggle_highlight()
         self.graphics.set_message("It\'s CPU "+str(self.currentTurn)+"\'s turn.")
         self.graphics.update_window()
-        time.sleep(2)
+        time.sleep(self.timer_delay)
         if not self.checkPlayable(self.players[self.currentTurn].hand):
             self.graphics.set_message(
                 "CPU does not have any legal cards. CPU drew 1 card. ")
             self.drawCard(self.players[self.currentTurn].hand)
             self.graphics.cpu_list[self.currentTurn - 1].card_count += 1
             self.graphics.update_window()
-            time.sleep(2)
+            time.sleep(self.timer_delay)
         if self.checkPlayable(self.players[self.currentTurn].hand):
             self.cpuPlayCard()
         self.graphics.cpu_list[self.currentTurn-1].toggle_highlight()
@@ -229,7 +250,7 @@ class game():
                 self.graphics.cpu_list[self.currentTurn - 1].card_count -= 1
                 self.graphics.set_message("CPU played: "+card.cardInfo()+wild_message)
                 self.graphics.update_window()
-                time.sleep(2)
+                time.sleep(self.timer_delay)
                 return
 
     def checkActionCard(self):
@@ -260,10 +281,20 @@ class game():
                 self.graphics.set_message("CPU drew "+str(self.extra_draw_count)+" cards because a draw card was played.")
                 self.graphics.cpu_list[self.currentTurn - 1].card_count += self.extra_draw_count
             self.graphics.update_window()
-            time.sleep(2)
+            time.sleep(self.timer_delay)
             self.changeTurn()
         self.extra_draw_count = 0
 
+    def gainPoints(self):
+        for player in self.players:
+            for card in player.hand:
+                self.players[self.currentTurn].points += card.points
+        if self.currentTurn == 0:
+            self.graphics.set_message("You won the round. You now have "+str(self.players[0].points)+" points.")
+        else:
+            self.graphics.set_message("CPU won the round. CPU now has "+str(self.players[self.currentTurn].points)+" points")
+        self.graphics.update_window()
+        time.sleep(self.timer_delay * 2)
 
 class graphicsUpdater():
     def __init__(self, unogame: game):
