@@ -65,7 +65,7 @@ class game():
         self.graphics = uno_gfx_api.unoGfx()
         self.graphics.set_welcome_message(welcome_message='Welcome to PyUno!')
         self.graphics.choose_num_players()
-        self.timer_delay = 0
+        self.timer_delay = 1
         self.gfx_updater = graphicsUpdater(unogame=self)
         self.playerCount = self.graphics.get_num_cpu()+1
         self.deck = deck()
@@ -84,8 +84,10 @@ class game():
         self.gfx_updater.showPlayerHand()
         self.card_played_question_mark = False
         self.extra_draw_count = 0
+        self.gameover = False
         self.gameStart()
-        self.newRound()
+        while not self.gameover:
+            self.newRound()
 
     def newRound(self):
         self.deck = deck()
@@ -295,6 +297,14 @@ class game():
             self.graphics.set_message("CPU won the round. CPU now has "+str(self.players[self.currentTurn].points)+" points")
         self.graphics.update_window()
         time.sleep(self.timer_delay * 2)
+        if self.players[self.currentTurn].points >= 500:
+            self.gameover = True
+            if self.currentTurn == 0:
+                self.graphics.set_message("You won the game. The game will now exit.")
+            else:
+                self.graphics.set_message("CPU "+str(self.currentTurn)+" won the game. The game will now exit.")
+            self.graphics.update_window()
+            time.sleep(self.timer_delay * 2 + 1)
 
 class graphicsUpdater():
     def __init__(self, unogame: game):
