@@ -1,6 +1,9 @@
 import parabola
 import matplotlib.pyplot as plt
+import MathLibrary
 
+print(MathLibrary.integerSumAdvanced(int(input("Choose a number:"))))
+print(MathLibrary.integerSum(int(input("Choose a number:"))))
 # if __name__ == '__main__':
 print("Hi Lucas. This is what happens when you don't wrap your main script in the if __name__ =='__main__' block!")
 # initialize a parabola passing through origin with vertex at 4,8
