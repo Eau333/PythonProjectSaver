@@ -4,6 +4,7 @@ import tkinter
 from tkinter import simpledialog
 import math
 import time
+import random
 ctypes.windll.user32.SetProcessDPIAware()
 
 
@@ -14,6 +15,7 @@ class CannonGameGfx:
         self.window = pyglet.window.Window()
         self.window.set_size(1500, 1000)
         pyglet.gl.glClearColor(0.5, 0.8, 1, 1.0)
+        self.wind = 0
         self.grass = pyglet.shapes.BorderedRectangle(x=0, y=0,
                                                               width=1500, height=300,
                                                               color=(50, 150, 50, 255),
@@ -26,11 +28,19 @@ class CannonGameGfx:
                                                          width=150, height=150,
                                                          color=(0, 0, 0, 255),
                                                          border_color=(0, 0, 0, 255))
+        self.windlabel = pyglet.text.Label("",
+                                       font_name='Arial',
+                                       font_size=36,
+                                       bold=True,
+                                       x=750, y=200,
+                                       anchor_x='center', anchor_y='center',
+                                       color=(0, 0, 0, 255))
         self.ball = None
         self.gunpowder = []
         self.root = tkinter.Tk()
         self.root.eval(f'tk::PlaceWindow {self.root._w} center')
         self.root.withdraw()
+        self.updateWind()
 
     def update_window(self):
         @self.window.event
@@ -39,6 +49,7 @@ class CannonGameGfx:
             self.grass.draw()
             self.playerone.draw()
             self.playertwo.draw()
+            self.windlabel.draw()
             if self.ball is not None:
                 self.ball.shape.draw()
         self.window.switch_to()
@@ -66,7 +77,12 @@ class CannonGameGfx:
             self.ball.shape.x += self.ball.xspeed * tick
             self.ball.shape.y += self.ball.yspeed * tick
             self.ball.yspeed -= gravity * tick
+            self.ball.xspeed += (self.wind - self.ball.xspeed) * tick
             time.sleep(tick)
+
+    def updateWind(self):
+        self.wind = random.randint(-1000, 1000)
+        self.windlabel.text = "wind:"+str(self.wind)
 
 class cannonball:
     def __init__(self,angle,force):
@@ -76,6 +92,3 @@ class cannonball:
         self.rspeed = force * self.cspeed
         self.xspeed = self.rspeed * math.cos(angle/180*math.pi)
         self.yspeed = self.rspeed * math.sin(angle/180*math.pi)
-
-
-
