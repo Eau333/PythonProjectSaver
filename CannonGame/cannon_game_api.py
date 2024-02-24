@@ -20,14 +20,14 @@ class CannonGameGfx:
                                                               width=1500, height=300,
                                                               color=(50, 150, 50, 255),
                                                               border_color=(0, 150, 0, 255))
-        self.playerone = pyglet.shapes.BorderedRectangle(x=200, y=200,
-                                                     width=150, height=150,
+        self.playerone = pyglet.shapes.Circle(x=275, y=275,
+                                                     radius=75,
                                                      color=(0, 0, 0, 255),
-                                                     border_color=(0, 0, 0, 255))
-        self.playertwo = pyglet.shapes.BorderedRectangle(x=1150, y=200,
-                                                         width=150, height=150,
-                                                         color=(0, 0, 0, 255),
-                                                         border_color=(0, 0, 0, 255))
+                                                     )
+        self.playertwo = pyglet.shapes.Circle(x=1225, y=275,
+                                                     radius=75,
+                                                     color=(0, 0, 0, 255),
+                                                     )
         self.windlabel = pyglet.text.Label("",
                                        font_name='Arial',
                                        font_size=36,
@@ -40,6 +40,7 @@ class CannonGameGfx:
         self.root = tkinter.Tk()
         self.root.eval(f'tk::PlaceWindow {self.root._w} center')
         self.root.withdraw()
+        self.firstturn = True
         self.updateWind()
 
     def update_window(self):
@@ -74,6 +75,7 @@ class CannonGameGfx:
         gravity = 300
         for i in range(0, 1000):
             self.update_window()
+            self.detectHit()
             self.ball.shape.x += self.ball.xspeed * tick
             self.ball.shape.y += self.ball.yspeed * tick
             self.ball.yspeed -= gravity * tick
@@ -83,6 +85,24 @@ class CannonGameGfx:
     def updateWind(self):
         self.wind = random.randint(-1000, 1000)
         self.windlabel.text = "wind:"+str(self.wind)
+
+    def detectHit(self):
+        targetx = 0
+        targety = 0
+        targetradius = 0
+        if self.firstturn:
+            targetx = self.playertwo.x
+            targety = self.playertwo.y
+            targetradius = self.playertwo.radius
+        else:
+            targetx = self.playerone.x
+            targety = self.playerone.y
+            targetradius = self.playerone.radius
+        xdiff = targetx - self.ball.shape.x
+        ydiff = targety - self.ball.shape.y
+        if math.sqrt((xdiff * xdiff) + (ydiff * ydiff)) < (self.ball.shape.radius + targetradius):
+            return True
+        return False
 
 class cannonball:
     def __init__(self,angle,force):
