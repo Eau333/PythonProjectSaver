@@ -42,6 +42,11 @@ class CannonGameGfx:
         self.root.withdraw()
         self.firstturn = True
         self.updateWind()
+        self.update_window()
+        while True:
+            self.playerTurn()
+            self.firstturn = not self.firstturn
+            # FIX LOOP LATER
 
     def update_window(self):
         @self.window.event
@@ -60,22 +65,41 @@ class CannonGameGfx:
 
     def playerTurn(self):
         prompt = "Enter the angle in degrees:"
-        selected_angle = simpledialog.askstring(title="It's your turn.",
-                                                     prompt=prompt,
-                                                     parent=self.root)
+        invalidSyntax = True
+        while invalidSyntax:
+            selected_angle = simpledialog.askstring(title="It's your turn.",
+                                                         prompt=prompt,
+                                                         parent=self.root)
+            try:
+                selected_angle = float(selected_angle)
+                invalidSyntax = False
+            except:
+                pass
         prompt = "Enter the amount of gun powder:"
-        selected_force = simpledialog.askstring(title="It's your turn.",
-                                                     prompt=prompt,
-                                                     parent=self.root)
-        self.ball = cannonball(float(selected_angle),float(selected_force))
+        invalidSyntax = True
+        while invalidSyntax:
+            selected_force = simpledialog.askstring(title="It's your turn.",
+                                                         prompt=prompt,
+                                                         parent=self.root)
+            try:
+                selected_force = float(selected_force)
+                invalidSyntax = False
+            except:
+                pass
+        self.ball = cannonball(selected_angle, selected_force, self.firstturn)
         self.fire()
 
     def fire(self):
         tick = 1/30
         gravity = 300
-        for i in range(0, 1000):
+        while True:
             self.update_window()
-            self.detectHit()
+            if self.detectHit():
+                self.ball.shape.x = 2000
+                self.update_window()
+                return True
+            if self.ball.shape.y <= -75:
+                return False
             self.ball.shape.x += self.ball.xspeed * tick
             self.ball.shape.y += self.ball.yspeed * tick
             self.ball.yspeed -= gravity * tick
@@ -105,9 +129,11 @@ class CannonGameGfx:
         return False
 
 class cannonball:
-    def __init__(self,angle,force):
+    def __init__(self,angle,force,turn):
         self.shape = pyglet.shapes.Circle(x=350, y=350, radius=30,
                                      color=(0, 0, 0))
+        if not turn:
+            self.shape.x = 1150
         self.cspeed = 3
         self.rspeed = force * self.cspeed
         self.xspeed = self.rspeed * math.cos(angle/180*math.pi)
