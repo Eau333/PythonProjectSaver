@@ -16,6 +16,7 @@ class CannonGameGfx:
         self.window.set_size(1500, 1000)
         pyglet.gl.glClearColor(0.5, 0.8, 1, 1.0)
         self.wind = 0
+        self.playerHP = [5, 5]
         self.grass = pyglet.shapes.BorderedRectangle(x=0, y=0,
                                                               width=1500, height=300,
                                                               color=(50, 150, 50, 255),
@@ -35,6 +36,29 @@ class CannonGameGfx:
                                        x=750, y=200,
                                        anchor_x='center', anchor_y='center',
                                        color=(0, 0, 0, 255))
+        self.turnLabel = pyglet.text.Label("p1 turn",
+                                           font_name='Arial',
+                                           font_size=36,
+                                           bold=True,
+                                           x=275, y=150,
+                                           anchor_x='center', anchor_y='center',
+                                           color=(234, 0, 0, 255))
+        self.HPlabel = [
+            pyglet.text.Label(str(self.playerHP[0])+" HP",
+                               font_name='Arial',
+                               font_size=30,
+                               bold=True,
+                               x=275, y=275,
+                               anchor_x='center', anchor_y='center',
+                               color=(0, 234, 0, 255)),
+            pyglet.text.Label(str(self.playerHP[1])+" HP",
+                              font_name='Arial',
+                              font_size=30,
+                              bold=True,
+                              x=1225, y=275,
+                              anchor_x='center', anchor_y='center',
+                              color=(0, 234, 0, 255))
+        ]
         self.ball = None
         self.gunpowder = []
         self.root = tkinter.Tk()
@@ -43,10 +67,16 @@ class CannonGameGfx:
         self.firstturn = True
         self.updateWind()
         self.update_window()
-        while True:
+        while min(self.playerHP) > 0:
             self.playerTurn()
             self.firstturn = not self.firstturn
-            # FIX LOOP LATER
+            if self.firstturn:
+                self.turnLabel.text = "p1 turn"
+                self.turnLabel.x = 275
+            else:
+                self.turnLabel.text = "p2 turn"
+                self.turnLabel.x = 1225
+            self.update_window()
 
     def update_window(self):
         @self.window.event
@@ -56,6 +86,9 @@ class CannonGameGfx:
             self.playerone.draw()
             self.playertwo.draw()
             self.windlabel.draw()
+            self.turnLabel.draw()
+            self.HPlabel[0].draw()
+            self.HPlabel[1].draw()
             if self.ball is not None:
                 self.ball.shape.draw()
         self.window.switch_to()
@@ -87,7 +120,12 @@ class CannonGameGfx:
             except:
                 pass
         self.ball = cannonball(selected_angle, selected_force, self.firstturn)
-        self.fire()
+        if self.fire():
+            playerIndex = 0
+            if self.firstturn:
+                playerIndex = 1
+            self.playerHP[playerIndex] -= 1
+            self.HPlabel[playerIndex].text = str(self.playerHP[playerIndex])+" HP"
 
     def fire(self):
         tick = 1/30
