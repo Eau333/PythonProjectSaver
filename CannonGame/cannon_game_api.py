@@ -60,12 +60,11 @@ class CannonGameGfx:
                               color=(0, 234, 0, 255))
         ]
         self.ball = None
-        self.gunpowder = []
+        self.gunpowder = [1000, 900]
         self.root = tkinter.Tk()
         self.root.eval(f'tk::PlaceWindow {self.root._w} center')
         self.root.withdraw()
         self.firstturn = True
-        self.updateWind()
         self.update_window()
         while min(self.playerHP) > 0:
             self.playerTurn()
@@ -77,6 +76,7 @@ class CannonGameGfx:
                 self.turnLabel.text = "p2 turn"
                 self.turnLabel.x = 1225
             self.update_window()
+            self.updateStatus()
 
     def update_window(self):
         @self.window.event
@@ -108,7 +108,10 @@ class CannonGameGfx:
                 invalidSyntax = False
             except:
                 pass
-        prompt = "Enter the amount of gun powder:"
+        if self.firstturn:
+            prompt = "You have "+str(self.gunpowder[0])+" gunpowder. Enter the amount of gunpowder:"
+        else:
+            prompt = "You have "+str(self.gunpowder[1])+" gunpowder. Enter the amount of gunpowder:"
         invalidSyntax = True
         while invalidSyntax:
             selected_force = simpledialog.askstring(title="It's your turn.",
@@ -119,6 +122,13 @@ class CannonGameGfx:
                 invalidSyntax = False
             except:
                 pass
+        if self.firstturn:
+            selected_force = min(selected_force, self.gunpowder[0])
+            self.gunpowder[0] -= selected_force
+        else:
+            selected_force = min(selected_force, self.gunpowder[1])
+            self.gunpowder[1] -= selected_force
+        selected_force = max(selected_force, 0)
         self.ball = cannonball(selected_angle, selected_force, self.firstturn)
         if self.fire():
             playerIndex = 0
@@ -144,9 +154,11 @@ class CannonGameGfx:
             self.ball.xspeed += (self.wind - self.ball.xspeed) * tick
             time.sleep(tick)
 
-    def updateWind(self):
+    def updateStatus(self):
         self.wind = random.randint(-1000, 1000)
         self.windlabel.text = "wind:"+str(self.wind)
+        for g in range(0,2):
+            self.gunpowder[g] += 100
 
     def detectHit(self):
         targetx = 0
