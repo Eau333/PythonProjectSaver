@@ -14,6 +14,7 @@ class CannonGameGfx:
         # initializing the game window
         self.window = pyglet.window.Window()
         self.window.set_size(1500, 1000)
+        self.window.set_location(100,100)
         pyglet.gl.glClearColor(0.5, 0.8, 1, 1.0)
         self.wind = 0
         self.playerHP = [5, 5]
@@ -60,13 +61,14 @@ class CannonGameGfx:
                               color=(0, 234, 0, 255))
         ]
         self.ball = None
-        self.gunpowder = [1000, 900]
+        self.gunpowder = [900, 900]
         self.root = tkinter.Tk()
         self.root.eval(f'tk::PlaceWindow {self.root._w} center')
         self.root.withdraw()
         self.firstturn = True
-        self.update_window()
         while min(self.playerHP) > 0:
+            self.updateStatus()
+            self.update_window()
             self.playerTurn()
             self.firstturn = not self.firstturn
             if self.firstturn:
@@ -76,7 +78,6 @@ class CannonGameGfx:
                 self.turnLabel.text = "p2 turn"
                 self.turnLabel.x = 1225
             self.update_window()
-            self.updateStatus()
 
     def update_window(self):
         @self.window.event
@@ -105,6 +106,8 @@ class CannonGameGfx:
                                                          parent=self.root)
             try:
                 selected_angle = float(selected_angle)
+                if not self.firstturn:
+                    selected_angle = (180 - selected_angle)
                 invalidSyntax = False
             except:
                 pass
